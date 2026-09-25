@@ -1,0 +1,1 @@
+Grape Client icon source: user-provided image resized for Android launcher packaging.
