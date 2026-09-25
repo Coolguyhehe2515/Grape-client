@@ -1,0 +1,9 @@
+{
+  "enabled": true,
+  "title": "Welcome to Grape Client",
+  "message": "Grape Client is currently in development.",
+  "type": "info",
+  "version": "",
+  "url": "",
+  "dismissible": true
+}
