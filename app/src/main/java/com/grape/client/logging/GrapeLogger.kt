@@ -12,7 +12,8 @@ object GrapeLogger {
 
     fun initialize(context: Context) {
         synchronized(lock) {
-            val root = context.getExternalFilesDir(null) ?: context.filesDir
+            val mediaRoot = context.getExternalMediaDirs().firstOrNull()
+            val root = mediaRoot ?: context.getExternalFilesDir(null) ?: context.filesDir
             val logs = File(root, "logs")
             logs.mkdirs()
             logFile = File(logs, "grape.log")
@@ -36,6 +37,7 @@ object GrapeLogger {
             ).format(Date())
 
             runCatching {
+                file.parentFile?.mkdirs()
                 file.appendText("[$timestamp] [$level] $message\n")
             }
         }
