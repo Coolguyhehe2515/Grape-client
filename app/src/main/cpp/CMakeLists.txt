@@ -1,9 +1,19 @@
 cmake_minimum_required(VERSION 3.22.1)
 project(grape)
 
-add_library(grape SHARED grape.cpp)
+add_library(grape SHARED
+    grape.cpp
+    grape_host.cpp
+)
 
 target_compile_features(grape PRIVATE cxx_std_17)
 
+target_include_directories(grape PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
 find_library(log-lib log)
-target_link_libraries(grape ${log-lib})
+find_library(android-lib android)
+
+target_link_libraries(grape
+    ${log-lib}
+    ${android-lib}
+)
