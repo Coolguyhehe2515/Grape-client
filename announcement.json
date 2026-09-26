@@ -9,11 +9,11 @@
 }
 
 {
- "enabled": true,
- "title": "Test",
- "message": "Grape Client is currently tested",
- "type": "info"
- "version": "",
- "url": "",
- "dismissiable": true
+  "enabled": true,
+  "title": "Test",
+  "message": "Grape Client is currently tested",
+  "type": "info",
+  "version": "",
+  "url": "",
+  "dismissible": true
 }
