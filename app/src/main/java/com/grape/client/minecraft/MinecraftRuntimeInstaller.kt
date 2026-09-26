@@ -25,18 +25,6 @@ class MinecraftRuntimeInstaller(private val context: Context) {
             "source=${runtime.packageName}\nabi=${runtime.abi}\n"
         )
 
-        return Result.success(
-            MinecraftRuntime(
-                instanceId = instance.id,
-                rootDirectory = instance.packageRoot,
-                nativeLibraryDir = runtime.nativeLibraryDir
-            )
-        )
+        return Result.success(runtime)
     }
 }
-
-data class MinecraftRuntime(
-    val instanceId: String,
-    val rootDirectory: File,
-    val nativeLibraryDir: File
-)
