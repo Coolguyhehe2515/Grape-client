@@ -1,30 +1,18 @@
 package com.grape.client.minecraft
 
-import android.app.Activity
-import android.graphics.Color
 import android.os.Bundle
-import android.view.Surface
-import android.view.SurfaceHolder
-import android.view.SurfaceView
+import com.google.androidgamesdk.GameActivity
 import android.widget.Toast
 
 /**
- * Hosts the Grape native game surface.
+ * Native GameActivity host for the Grape Minecraft runtime.
  *
- * The Minecraft engine remains the user's official, licensed installation;
- * Grape does not bypass its entitlement or bundle proprietary engine binaries.
+ * The Minecraft engine remains the user's official, licensed installation.
+ * Grape does not bundle proprietary Minecraft binaries or bypass entitlement checks.
  */
-class MinecraftHostActivity : Activity(), SurfaceHolder.Callback {
-    private lateinit var surfaceView: SurfaceView
-
+class MinecraftHostActivity : GameActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.setBackgroundDrawableColor(Color.BLACK)
-
-        surfaceView = SurfaceView(this).apply {
-            holder.addCallback(this@MinecraftHostActivity)
-        }
-        setContentView(surfaceView)
 
         val installer = MinecraftRuntimeInstaller(this)
         val installed = installer.install(
@@ -36,13 +24,21 @@ class MinecraftHostActivity : Activity(), SurfaceHolder.Callback {
         )
 
         val runtime = installed.getOrElse {
-            Toast.makeText(this, it.message ?: "Minecraft runtime is not ready.", Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                this,
+                it.message ?: "Minecraft runtime is not ready.",
+                Toast.LENGTH_LONG
+            ).show()
             finish()
             return
         }
 
         MinecraftRuntimeValidator.validate(runtime).onFailure {
-            Toast.makeText(this, it.message ?: "Minecraft runtime validation failed.", Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                this,
+                it.message ?: "Minecraft runtime validation failed.",
+                Toast.LENGTH_LONG
+            ).show()
             finish()
             return
         }
@@ -56,30 +52,8 @@ class MinecraftHostActivity : Activity(), SurfaceHolder.Callback {
         )
     }
 
-    override fun surfaceCreated(holder: SurfaceHolder) {
-        nativeAttach(holder.surface)
-    }
-
-    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-        nativeAttach(holder.surface)
-    }
-
-    override fun surfaceDestroyed(holder: SurfaceHolder) {
-        nativeDetach()
-    }
-
     override fun onDestroy() {
-        nativeDetach()
         MinecraftLaunchSession.clear()
         super.onDestroy()
-    }
-
-    private external fun nativeAttach(surface: Surface)
-    private external fun nativeDetach()
-
-    companion object {
-        init {
-            System.loadLibrary("grape")
-        }
     }
 }
