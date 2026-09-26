@@ -17,7 +17,9 @@ find_library(android-lib android)
 find_package(game-activity REQUIRED CONFIG)
 
 target_link_libraries(grape
+    -Wl,--whole-archive
     game-activity::game-activity_static
+    -Wl,--no-whole-archive
     ${log-lib}
     ${android-lib}
     dl
