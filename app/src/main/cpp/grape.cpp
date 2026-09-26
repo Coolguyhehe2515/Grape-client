@@ -7,8 +7,7 @@ Java_com_grape_client_MainActivity_nativeVersion(JNIEnv* env, jobject) {
     return env->NewStringUTF("Grape native core 0.1.0");
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_grape_client_MainActivity_nativeAttachSurface(JNIEnv* env, jobject, jobject surface) {
+static void attachSurface(JNIEnv* env, jobject surface) {
     if (surface == nullptr) {
         grape_host_clear_surface();
         return;
@@ -25,6 +24,21 @@ Java_com_grape_client_MainActivity_nativeAttachSurface(JNIEnv* env, jobject, job
 }
 
 extern "C" JNIEXPORT void JNICALL
+Java_com_grape_client_MainActivity_nativeAttachSurface(JNIEnv* env, jobject, jobject surface) {
+    attachSurface(env, surface);
+}
+
+extern "C" JNIEXPORT void JNICALL
 Java_com_grape_client_MainActivity_nativeDetachSurface(JNIEnv*, jobject) {
+    grape_host_clear_surface();
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_grape_client_minecraft_MinecraftHostActivity_nativeAttach(JNIEnv* env, jobject, jobject surface) {
+    attachSurface(env, surface);
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_grape_client_minecraft_MinecraftHostActivity_nativeDetach(JNIEnv*, jobject) {
     grape_host_clear_surface();
 }
