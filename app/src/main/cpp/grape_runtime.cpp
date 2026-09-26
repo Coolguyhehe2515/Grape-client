@@ -8,6 +8,8 @@
 namespace {
 std::mutex g_mutex;
 void* g_main_handle = nullptr;
+grape::runtime::RuntimeConfig g_config;
+using MinecraftMain = void (*)(android_app*);
 }
 
 namespace grape::runtime {
@@ -42,12 +44,14 @@ bool load(const RuntimeConfig& config, std::string& error) {
         return false;
     }
 
+    g_config = config;
+
     if (g_main_handle != nullptr) {
         return true;
     }
 
     dlerror();
-    g_main_handle = dlopen(config.main_library.c_str(), RTLD_NOW | RTLD_LOCAL);
+    g_main_handle = dlopen(config.main_library.c_str(), RTLD_NOW | RTLD_GLOBAL);
     if (g_main_handle == nullptr) {
         const char* detail = dlerror();
         error = detail != nullptr ? detail : "Unable to load Minecraft runtime";
@@ -57,12 +61,40 @@ bool load(const RuntimeConfig& config, std::string& error) {
     return true;
 }
 
+bool runMinecraft(android_app* app, std::string& error) {
+    std::lock_guard<std::mutex> lock(g_mutex);
+
+    if (g_main_handle == nullptr) {
+        error = "Minecraft runtime is not loaded";
+        return false;
+    }
+
+    dlerror();
+    auto* entry = reinterpret_cast<MinecraftMain>(dlsym(g_main_handle, "android_main"));
+    const char* detail = dlerror();
+
+    if (entry == nullptr || detail != nullptr) {
+        error = detail != nullptr
+            ? detail
+            : "Minecraft runtime does not export android_main";
+        return false;
+    }
+
+    entry(app);
+    return true;
+}
+
 void unload() {
     std::lock_guard<std::mutex> lock(g_mutex);
     if (g_main_handle != nullptr) {
         dlclose(g_main_handle);
         g_main_handle = nullptr;
     }
+}
+
+void clearConfig() {
+    std::lock_guard<std::mutex> lock(g_mutex);
+    g_config = {};
 }
 
 }
