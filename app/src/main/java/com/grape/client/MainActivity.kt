@@ -170,9 +170,9 @@ class MainActivity : Activity() {
             setPadding(dp(8), dp(8), dp(8), dp(8))
             background = rounded(surface, 24)
         }
-        homeButton = navItem("⌂\nBeranda")
-        settingsButton = navItem("⚙\nPengaturan")
-        aboutButton = navItem("ⓘ\nTentang")
+        homeButton = navItem("⌂\nHome")
+        settingsButton = navItem("⚙\nSettings")
+        aboutButton = navItem("ⓘ\nAbout")
         homeButton.setOnClickListener { showHome() }
         settingsButton.setOnClickListener { showSettings() }
         aboutButton.setOnClickListener { showAbout() }
