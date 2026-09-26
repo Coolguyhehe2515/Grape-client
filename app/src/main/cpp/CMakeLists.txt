@@ -14,7 +14,10 @@ target_include_directories(grape PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 find_library(log-lib log)
 find_library(android-lib android)
 
+find_package(game-activity REQUIRED CONFIG)
+
 target_link_libraries(grape
+    game-activity::game-activity_static
     ${log-lib}
     ${android-lib}
     dl
