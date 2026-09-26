@@ -4,6 +4,7 @@ project(grape)
 add_library(grape SHARED
     grape.cpp
     grape_host.cpp
+    grape_runtime.cpp
 )
 
 target_compile_features(grape PRIVATE cxx_std_17)
@@ -16,4 +17,5 @@ find_library(android-lib android)
 target_link_libraries(grape
     ${log-lib}
     ${android-lib}
+    dl
 )
