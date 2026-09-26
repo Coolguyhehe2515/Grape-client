@@ -1,28 +1,22 @@
 package com.grape.client.minecraft
 
 import android.os.Bundle
-import com.google.androidgamesdk.GameActivity
 import android.widget.Toast
+import com.google.androidgamesdk.GameActivity
 
-/**
- * Native GameActivity host for the Grape Minecraft runtime.
- *
- * The Minecraft engine remains the user's official, licensed installation.
- * Grape does not bundle proprietary Minecraft binaries or bypass entitlement checks.
- */
+/** Native GameActivity host for the Grape Minecraft runtime. */
 class MinecraftHostActivity : GameActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val installer = MinecraftRuntimeInstaller(this)
-        val installed = installer.install(
-            MinecraftInstance(
-                instanceId = "default",
-                rootDirectory = filesDir.resolve("minecraft/default"),
-                nativeDirectory = filesDir.resolve("minecraft/default/libraries/arm64-v8a")
-            )
+        val instance = MinecraftInstance(
+            id = "default",
+            packageRoot = filesDir.resolve("minecraft/default"),
+            nativeDirectory = filesDir.resolve("minecraft/default/libraries/arm64-v8a")
         )
 
+        val installed = installer.install(instance)
         val runtime = installed.getOrElse {
             Toast.makeText(
                 this,
@@ -44,11 +38,7 @@ class MinecraftHostActivity : GameActivity() {
         }
 
         MinecraftLaunchSession.set(
-            MinecraftInstance(
-                instanceId = "default",
-                rootDirectory = filesDir.resolve("minecraft/default"),
-                nativeDirectory = runtime.nativeLibraryDir
-            )
+            instance.copy(nativeDirectory = runtime.nativeLibraryDir)
         )
     }
 
