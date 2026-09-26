@@ -1,30 +1,24 @@
 package com.grape.client
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
-import android.view.Surface
-import android.view.SurfaceHolder
-import android.view.SurfaceView
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import com.grape.client.announcement.AnnouncementRepository
+import com.grape.client.minecraft.MinecraftHostActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class MainActivity : Activity(), SurfaceHolder.Callback {
+class MainActivity : Activity() {
     private lateinit var announcementView: TextView
-    private lateinit var gameSurface: SurfaceView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        gameSurface = SurfaceView(this).apply {
-            holder.addCallback(this@MainActivity)
-        }
 
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -37,19 +31,13 @@ class MainActivity : Activity(), SurfaceHolder.Callback {
         }
 
         val status = TextView(this).apply {
-            text = "Native core: ${nativeVersion()}\nARM64 host ready"
+            text = "Native core: ${nativeVersion()}\nARM64 runtime host ready"
             textSize = 16f
         }
 
         val launchButton = Button(this).apply {
             text = "Launch Minecraft"
-            setOnClickListener {
-                Toast.makeText(
-                    this@MainActivity,
-                    "Native game surface is ready. Minecraft runtime is not bundled yet.",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
+            setOnClickListener { launchMinecraftHost() }
         }
 
         announcementView = TextView(this).apply {
@@ -60,7 +48,6 @@ class MainActivity : Activity(), SurfaceHolder.Callback {
 
         layout.addView(title)
         layout.addView(status)
-        layout.addView(gameSurface, LinearLayout.LayoutParams(-1, 0, 1f))
         layout.addView(launchButton)
         layout.addView(announcementView)
         setContentView(layout)
@@ -68,16 +55,16 @@ class MainActivity : Activity(), SurfaceHolder.Callback {
         loadAnnouncement()
     }
 
-    override fun surfaceCreated(holder: SurfaceHolder) {
-        nativeAttachSurface(holder.surface)
-    }
-
-    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-        nativeAttachSurface(holder.surface)
-    }
-
-    override fun surfaceDestroyed(holder: SurfaceHolder) {
-        nativeDetachSurface()
+    private fun launchMinecraftHost() {
+        runCatching {
+            startActivity(Intent(this, MinecraftHostActivity::class.java))
+        }.onFailure {
+            Toast.makeText(
+                this,
+                it.message ?: "Unable to start Minecraft host.",
+                Toast.LENGTH_LONG
+            ).show()
+        }
     }
 
     private fun loadAnnouncement() {
@@ -93,8 +80,6 @@ class MainActivity : Activity(), SurfaceHolder.Callback {
     }
 
     private external fun nativeVersion(): String
-    private external fun nativeAttachSurface(surface: Surface)
-    private external fun nativeDetachSurface()
 
     companion object {
         init {
