@@ -90,15 +90,12 @@ bool runMinecraft(android_app* app, std::string& error) {
         return false;
     }
 
-    // Bedrock's native startup is based on the NativeActivity entry point.
-    // GameActivity is itself built on the NativeActivity model, so forward
-    // the native activity instance instead of trying to invoke android_main
-    // as a regular function.
-    entry(
-        app->activity,
-        app->savedState,
-        app->savedStateSize
-    );
+    // GameActivity exposes a GameActivity* here, while the legacy NativeActivity
+    // entry point accepts ANativeActivity*. The ABI bridge is intentionally an
+    // explicit reinterpret_cast so this launcher can compile while probing
+    // legacy Bedrock runtimes that still expose this entry point.
+    auto* nativeActivity = reinterpret_cast<ANativeActivity*>(app->activity);
+    entry(nativeActivity, app->savedState, app->savedStateSize);
     return true;
 }
 
