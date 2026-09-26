@@ -1,10 +1,15 @@
 package com.grape.client
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Typeface
 import android.os.Bundle
+import android.view.Gravity
+import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.Space
 import android.widget.TextView
 import android.widget.Toast
 import com.grape.client.announcement.AnnouncementRepository
@@ -22,17 +27,25 @@ class MainActivity : Activity() {
 
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(48, 48, 48, 48)
+            setPadding(32, 40, 32, 32)
         }
 
         val title = TextView(this).apply {
             text = "Grape Client"
-            textSize = 28f
+            textSize = 30f
+            setTypeface(typeface, Typeface.BOLD)
         }
 
         val status = TextView(this).apply {
             text = "Native core: ${nativeVersion()}\nARM64 runtime host ready"
             textSize = 16f
+            setPadding(0, 8, 0, 0)
+        }
+
+        val actions = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(0, 28, 0, 0)
         }
 
         val launchButton = Button(this).apply {
@@ -40,15 +53,24 @@ class MainActivity : Activity() {
             setOnClickListener { launchMinecraftHost() }
         }
 
+        val aboutButton = Button(this).apply {
+            text = "About"
+            setOnClickListener { showAboutDialog() }
+        }
+
+        actions.addView(launchButton, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        actions.addView(Space(this), LinearLayout.LayoutParams(12, 1))
+        actions.addView(aboutButton, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.45f))
+
         announcementView = TextView(this).apply {
             textSize = 16f
-            setPadding(0, 32, 0, 0)
-            visibility = TextView.GONE
+            setPadding(0, 28, 0, 0)
+            visibility = View.GONE
         }
 
         layout.addView(title)
         layout.addView(status)
-        layout.addView(launchButton)
+        layout.addView(actions)
         layout.addView(announcementView)
         setContentView(layout)
 
@@ -67,13 +89,26 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun showAboutDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("About Grape Client")
+            .setMessage(
+                "Version: Alpha 0.0.1\n\n" +
+                    "Grape Client is an independent Minecraft client project.\n\n" +
+                    "Credits are managed through the project's remote JSON configuration.\n\n" +
+                    "Grape Client is not an official Microsoft product and is not affiliated with Microsoft."
+            )
+            .setPositiveButton("OK", null)
+            .show()
+    }
+
     private fun loadAnnouncement() {
         CoroutineScope(Dispatchers.IO).launch {
             val result = runCatching { AnnouncementRepository(this@MainActivity).fetch() }.getOrNull()
             withContext(Dispatchers.Main) {
                 if (result?.enabled == true) {
                     announcementView.text = "${result.title}\n\n${result.message}"
-                    announcementView.visibility = TextView.VISIBLE
+                    announcementView.visibility = View.VISIBLE
                 }
             }
         }
