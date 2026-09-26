@@ -43,7 +43,7 @@ class MainActivity : Activity() {
     private fun showHome() {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(background)
+            setBackgroundColor(this@MainActivity.background)
         }
         content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -106,7 +106,7 @@ class MainActivity : Activity() {
     }
 
     private fun showSettings() {
-        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(background) }
+        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(this@MainActivity.background) }
         val page = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(20), dp(24), dp(20), dp(20)) }
         page.addView(text("Settings", 30f, textPrimary).apply { setTypeface(typeface, Typeface.BOLD) })
         page.addView(card().apply {
@@ -120,7 +120,7 @@ class MainActivity : Activity() {
     }
 
     private fun showAbout() {
-        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(background) }
+        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(this@MainActivity.background) }
         val page = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(20), dp(24), dp(20), dp(20)) }
         page.addView(text("About", 30f, textPrimary).apply { setTypeface(typeface, Typeface.BOLD) })
         page.addView(text("Grape Client", 19f, accent).apply { setTypeface(typeface, Typeface.BOLD) })
