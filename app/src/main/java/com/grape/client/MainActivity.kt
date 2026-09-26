@@ -2,9 +2,12 @@ package com.grape.client
 
 import android.app.Activity
 import android.os.Bundle
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import com.grape.client.announcement.AnnouncementRepository
+import com.grape.client.minecraft.OfficialMinecraftLauncher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -31,6 +34,11 @@ class MainActivity : Activity() {
             textSize = 16f
         }
 
+        val launchButton = Button(this).apply {
+            text = "Launch Minecraft"
+            setOnClickListener { launchMinecraft() }
+        }
+
         announcementView = TextView(this).apply {
             textSize = 16f
             setPadding(0, 32, 0, 0)
@@ -39,15 +47,23 @@ class MainActivity : Activity() {
 
         layout.addView(title)
         layout.addView(status)
+        layout.addView(launchButton)
         layout.addView(announcementView)
         setContentView(layout)
 
         loadAnnouncement()
     }
 
+    private fun launchMinecraft() {
+        val result = OfficialMinecraftLauncher(this).launch()
+        result.exceptionOrNull()?.let {
+            Toast.makeText(this, it.message ?: "Unable to launch Minecraft.", Toast.LENGTH_LONG).show()
+        }
+    }
+
     private fun loadAnnouncement() {
         CoroutineScope(Dispatchers.IO).launch {
-            val result = runCatching { AnnouncementRepository.fetch() }.getOrNull()
+            val result = runCatching { AnnouncementRepository(this@MainActivity).fetch() }.getOrNull()
             withContext(Dispatchers.Main) {
                 if (result?.enabled == true) {
                     announcementView.text = "${result.title}\n\n${result.message}"
