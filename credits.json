@@ -1,8 +1,14 @@
 {
   "credits": [
     {
-      "name": "Grape Client Team",
-      "role": "Grape Client development"
+      "name": "SPT",
+      "role": "Grape Client development",
+      "link": "https://github.com/SpaghettiProductionTeam"
+    },
+    {
+      "name": "Coolguyhehe2515",
+      "role": "Owner of SPT",
+      "link": "https://github.com/Coolguyhehe2515"
     }
   ]
 }
