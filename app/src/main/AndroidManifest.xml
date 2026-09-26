@@ -15,7 +15,11 @@
         <activity
             android:name=".minecraft.MinecraftHostActivity"
             android:exported="false"
-            android:screenOrientation="unspecified" />
+            android:screenOrientation="unspecified">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="grape" />
+        </activity>
         <activity
             android:name=".MainActivity"
             android:exported="true">
