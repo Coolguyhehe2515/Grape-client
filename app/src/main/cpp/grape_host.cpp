@@ -21,7 +21,8 @@ extern "C" void grape_host_set_surface(ANativeWindow* window) {
     }
 
     if (window != nullptr) {
-        g_window = ANativeWindow_acquire(window);
+        ANativeWindow_acquire(window);
+        g_window = window;
         __android_log_print(ANDROID_LOG_INFO, "GrapeHost", "Native surface attached");
     }
 }
