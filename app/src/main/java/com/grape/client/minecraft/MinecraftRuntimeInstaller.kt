@@ -4,7 +4,7 @@ import android.content.Context
 import java.io.File
 
 /**
- * Imports the native runtime from the user's installed, licensed Minecraft package.
+ * Prepares a runtime supplied by the user's installed, licensed Minecraft package.
  * Grape never downloads or bundles proprietary Minecraft binaries.
  */
 class MinecraftRuntimeInstaller(private val context: Context) {
@@ -21,10 +21,22 @@ class MinecraftRuntimeInstaller(private val context: Context) {
             return Result.failure(IllegalStateException("Unable to create the runtime directory."))
         }
 
-        // Keep the proprietary libraries in Minecraft's own package. The instance only
-        // records the verified source location; no binary is copied into the repository.
-        val marker = File(target, "runtime-source.txt")
-        marker.writeText("source=${runtime.packageName}\nabi=${runtime.abi}\n")
-        return Result.success(runtime)
+        File(target, "runtime-source.txt").writeText(
+            "source=${runtime.packageName}\nabi=${runtime.abi}\n"
+        )
+
+        return Result.success(
+            MinecraftRuntime(
+                instanceId = instance.id,
+                rootDirectory = instance.packageRoot,
+                nativeLibraryDir = runtime.nativeLibraryDir
+            )
+        )
     }
 }
+
+data class MinecraftRuntime(
+    val instanceId: String,
+    val rootDirectory: File,
+    val nativeLibraryDir: File
+)
