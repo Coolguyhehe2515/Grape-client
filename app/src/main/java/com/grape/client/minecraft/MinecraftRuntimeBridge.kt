@@ -13,6 +13,6 @@ class MinecraftRuntimeBridge(private val context: Context) {
     }
 
     fun describe(runtime: MinecraftRuntime): String {
-        return "${runtime.instanceId}: ${runtime.nativeLibraryDir.absolutePath}"
+        return "${runtime.packageName}: ${runtime.nativeLibraryDir.absolutePath}"
     }
 }
