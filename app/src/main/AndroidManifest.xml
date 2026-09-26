@@ -13,6 +13,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GrapeClient">
         <activity
+            android:name=".minecraft.MinecraftHostActivity"
+            android:exported="false"
+            android:screenOrientation="unspecified" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
