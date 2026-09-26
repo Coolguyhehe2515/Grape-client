@@ -1,15 +1,18 @@
 #include "grape_runtime.h"
 
+#include <android/native_activity.h>
 #include <dlfcn.h>
 #include <sys/stat.h>
 
 #include <mutex>
 
+#include <game-activity/native_app_glue/android_native_app_glue.h>
+
 namespace {
 std::mutex g_mutex;
 void* g_main_handle = nullptr;
 grape::runtime::RuntimeConfig g_config;
-using MinecraftMain = void (*)(android_app*);
+using MinecraftActivityOnCreate = void (*)(ANativeActivity*, void*, size_t);
 }
 
 namespace grape::runtime {
@@ -69,18 +72,33 @@ bool runMinecraft(android_app* app, std::string& error) {
         return false;
     }
 
+    if (app == nullptr || app->activity == nullptr) {
+        error = "GameActivity native activity instance is unavailable";
+        return false;
+    }
+
     dlerror();
-    auto* entry = reinterpret_cast<MinecraftMain>(dlsym(g_main_handle, "android_main"));
+    auto* entry = reinterpret_cast<MinecraftActivityOnCreate>(
+        dlsym(g_main_handle, "ANativeActivity_onCreate")
+    );
     const char* detail = dlerror();
 
     if (entry == nullptr || detail != nullptr) {
         error = detail != nullptr
             ? detail
-            : "Minecraft runtime does not export android_main";
+            : "Minecraft runtime does not export ANativeActivity_onCreate";
         return false;
     }
 
-    entry(app);
+    // Bedrock's native startup is based on the NativeActivity entry point.
+    // GameActivity is itself built on the NativeActivity model, so forward
+    // the native activity instance instead of trying to invoke android_main
+    // as a regular function.
+    entry(
+        app->activity,
+        app->savedState,
+        app->savedStateSize
+    );
     return true;
 }
 
