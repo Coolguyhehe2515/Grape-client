@@ -13,6 +13,6 @@ class MinecraftLauncher(private val context: Context) {
             return Result.failure(UnsupportedOperationException("Grape Client requires arm64-v8a."))
         }
         val instance = packages.prepareInstance(instanceId)
-        return Result.success(instance.absolutePath)
+        return Result.success(instance.root.absolutePath)
     }
 }
