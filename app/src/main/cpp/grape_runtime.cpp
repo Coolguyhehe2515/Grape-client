@@ -30,6 +30,11 @@ bool load(const RuntimeConfig& config, std::string& error) {
     return true;
 }
 
+bool runMinecraft(android_app*, std::string& error) {
+    error = "Minecraft native entry is not implemented in this runtime scaffold";
+    return false;
+}
+
 void unload() {
     if (g_main_handle != nullptr) {
         dlclose(g_main_handle);
