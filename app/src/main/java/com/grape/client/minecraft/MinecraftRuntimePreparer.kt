@@ -2,32 +2,25 @@ package com.grape.client.minecraft
 
 import android.content.Context
 import com.grape.client.logging.GrapeLogger
-import java.io.File
 
-/**
- * Prepares the private runtime layout before the Minecraft host activity starts.
- * Native binaries are not modified or copied from arbitrary external paths.
- */
-class MinecraftRuntimePreparer(private val context: Context) {
+class MinecraftRuntimePreparer(context: Context) {
+
     private val manager = GamePackageManager(context)
 
-    fun prepare(instanceId: String, verifiedEntitlement: Boolean): Result<MinecraftInstance> {
-        if (!LicenseGate.canLaunch(verifiedEntitlement)) {
-            GrapeLogger.error("Minecraft launch blocked: verified entitlement is required")
-            return Result.failure(IllegalStateException("A verified Minecraft license is required."))
-        }
-
+    fun prepare(instanceId: String): Result<MinecraftInstance> {
         if (!manager.isArm64Supported()) {
-            GrapeLogger.error("Minecraft launch blocked: arm64-v8a is unavailable")
-            return Result.failure(UnsupportedOperationException("Grape Client requires arm64-v8a."))
+            GrapeLogger.error("Minecraft runtime requires arm64-v8a")
+            return Result.failure(
+                UnsupportedOperationException("Grape Client requires arm64-v8a")
+            )
         }
 
-        val root = manager.prepareInstance(instanceId)
-        val nativeDir = File(root, "libraries/arm64-v8a")
-        GrapeLogger.info("Minecraft runtime instance prepared: $instanceId")
-        GrapeLogger.info("Minecraft runtime root: ${root.absolutePath}")
-        GrapeLogger.info("Minecraft native runtime directory: ${nativeDir.absolutePath}")
+        val instance = manager.prepareInstance(instanceId)
 
-        return Result.success(MinecraftInstance(instanceId, root, nativeDir))
+        GrapeLogger.info("Minecraft runtime prepared: ${instance.root.absolutePath}")
+        GrapeLogger.info("Native directory: ${instance.nativeDir.absolutePath}")
+        GrapeLogger.info("Data directory: ${instance.dataDir.absolutePath}")
+
+        return Result.success(instance)
     }
 }

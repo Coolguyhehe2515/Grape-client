@@ -1,34 +1,37 @@
 package com.grape.client.minecraft
 
 import android.content.Context
+import android.os.Build
 import java.io.File
 
-/**
- * ARM64-only game package manager inspired by the architecture used by
- * Android Minecraft launchers. It prepares an imported game package without
- * attempting to bypass Minecraft's own licensing or authentication.
- */
 class GamePackageManager(private val context: Context) {
 
     private val root: File
         get() = File(context.filesDir, "minecraft")
 
-    val instancesDir: File
-        get() = File(root, "instances")
-
     fun instanceDir(id: String): File {
-        require(id.matches(Regex("[A-Za-z0-9._-]+"))) { "Invalid instance id" }
-        return File(instancesDir, id)
+        require(id.matches(Regex("[A-Za-z0-9._-]+"))) {
+            "Invalid Minecraft instance id"
+        }
+        return File(root, "instances/$id")
     }
 
-    fun prepareInstance(id: String): File {
-        val dir = instanceDir(id)
-        File(dir, "libraries/arm64-v8a").mkdirs()
-        File(dir, "data").mkdirs()
-        return dir
+    fun prepareInstance(id: String): MinecraftInstance {
+        val instance = instanceDir(id)
+        val nativeDir = File(instance, "libraries/arm64-v8a")
+        val dataDir = File(instance, "data")
+
+        nativeDir.mkdirs()
+        dataDir.mkdirs()
+
+        return MinecraftInstance(
+            id = id,
+            root = instance,
+            nativeDir = nativeDir,
+            dataDir = dataDir
+        )
     }
 
-    fun isArm64Supported(): Boolean = android.os.Build.SUPPORTED_ABIS.any {
-        it == "arm64-v8a"
-    }
+    fun isArm64Supported(): Boolean =
+        Build.SUPPORTED_ABIS.any { it == "arm64-v8a" }
 }

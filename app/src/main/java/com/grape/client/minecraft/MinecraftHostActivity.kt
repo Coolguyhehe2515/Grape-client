@@ -5,28 +5,36 @@ import com.google.androidgamesdk.GameActivity
 import com.grape.client.logging.GrapeLogger
 
 /**
- * In-process Minecraft host based on the GameActivity lifecycle used by
- * Bedrock launchers. It does not start Minecraft as a separate Android app.
+ * In-process GameActivity host.
+ *
+ * Native Minecraft code must only be entered after the runtime preparation
+ * step succeeds. This activity does not launch Minecraft as a separate app.
  */
 class MinecraftHostActivity : GameActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        GrapeLogger.info("Minecraft in-process GameActivity host starting")
+        GrapeLogger.info("MinecraftHostActivity starting")
 
-        val manager = GamePackageManager(this)
-        if (!manager.isArm64Supported()) {
-            GrapeLogger.error("Minecraft in-process host requires arm64-v8a")
+        val preparer = MinecraftRuntimePreparer(this)
+        val instanceResult = preparer.prepare(DEFAULT_INSTANCE_ID)
+
+        if (instanceResult.isFailure) {
+            GrapeLogger.error(
+                "Minecraft runtime preparation failed: " +
+                    instanceResult.exceptionOrNull()?.message
+            )
             finish()
             return
         }
 
-        val instance = manager.prepareInstance(DEFAULT_INSTANCE_ID)
-        GrapeLogger.info("Minecraft runtime instance prepared: ${instance.absolutePath}")
-        GrapeLogger.info("Entering GameActivity native lifecycle")
+        val instance = instanceResult.getOrThrow()
+
+        GrapeLogger.info("Entering GameActivity lifecycle")
+        GrapeLogger.info("Runtime root: ${instance.root.absolutePath}")
 
         super.onCreate(savedInstanceState)
 
-        GrapeLogger.info("Minecraft GameActivity lifecycle entered")
+        GrapeLogger.info("GameActivity lifecycle entered")
     }
 
     companion object {
