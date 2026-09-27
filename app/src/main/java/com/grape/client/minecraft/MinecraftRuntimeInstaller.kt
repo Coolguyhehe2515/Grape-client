@@ -16,7 +16,7 @@ class MinecraftRuntimeInstaller(private val context: Context) {
             return Result.failure(UnsupportedOperationException("Only arm64-v8a Minecraft is supported."))
         }
 
-        val target = instance.nativeDirectory
+        val target = instance.nativeDir
         if (!target.exists() && !target.mkdirs()) {
             return Result.failure(IllegalStateException("Unable to create the runtime directory."))
         }
