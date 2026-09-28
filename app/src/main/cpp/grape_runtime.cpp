@@ -26,7 +26,6 @@ namespace grape::runtime {
 
 bool load(const RuntimeConfig& config, std::string& error) {
     unload();
-    g_config = config;
 
     if (config.main_library.empty()) {
         error = "Runtime library path is empty";
@@ -96,7 +95,6 @@ void unload() {
 
 void clearConfig() {
     unload();
-    g_config = {};
 }
 
 } // namespace grape::runtime
