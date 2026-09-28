@@ -11,6 +11,8 @@ import com.grape.client.logging.GrapeLogger
  */
 class MinecraftHostActivity : GameActivity() {
 
+    private var runtimeConfigured = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         GrapeLogger.info("MinecraftHostActivity starting")
 
@@ -28,17 +30,56 @@ class MinecraftHostActivity : GameActivity() {
 
         val instance = result.getOrThrow()
 
-        GrapeLogger.info(
-            "Runtime root: ${instance.root.absolutePath}"
-        )
+        GrapeLogger.info("Runtime root: ${instance.root.absolutePath}")
         GrapeLogger.info(
             "Runtime native directory: ${instance.nativeDir.absolutePath}"
         )
+        GrapeLogger.info("Runtime data directory: ${instance.dataDir.absolutePath}")
+
+        val installedRuntime = MinecraftRuntimeProvider.findInstalled(this)
+
+        if (installedRuntime == null) {
+            GrapeLogger.error("Installed Minecraft runtime disappeared during startup")
+            finish()
+            return
+        }
+
+        val mainLibrary = java.io.File(
+            installedRuntime.nativeLibraryDir,
+            "libminecraftpe.so"
+        )
+
+        GrapeLogger.info("Runtime source: ${installedRuntime.sourceApk.absolutePath}")
+        GrapeLogger.info("Runtime native source: ${installedRuntime.nativeLibraryDir.absolutePath}")
+        GrapeLogger.info("Runtime main library: ${mainLibrary.absolutePath}")
+
+        if (!mainLibrary.isFile) {
+            GrapeLogger.error(
+                "Minecraft native library was not found: ${mainLibrary.absolutePath}"
+            )
+            finish()
+            return
+        }
+
+        nativeConfigureMinecraftRuntime(
+            installedRuntime.nativeLibraryDir.absolutePath,
+            mainLibrary.absolutePath
+        )
+        runtimeConfigured = true
+
         GrapeLogger.info("Starting GameActivity native lifecycle")
-
         super.onCreate(savedInstanceState)
-
         GrapeLogger.info("GameActivity native lifecycle started")
+    }
+
+    override fun onDestroy() {
+        if (runtimeConfigured) {
+            nativeClearMinecraftRuntime()
+            runtimeConfigured = false
+        }
+
+        GrapeLogger.info("MinecraftHostActivity destroyed")
+        super.onDestroy()
     }
 
     override fun onResume() {
@@ -51,10 +92,12 @@ class MinecraftHostActivity : GameActivity() {
         super.onPause()
     }
 
-    override fun onDestroy() {
-        GrapeLogger.info("MinecraftHostActivity destroyed")
-        super.onDestroy()
-    }
+    private external fun nativeConfigureMinecraftRuntime(
+        nativeDirectory: String,
+        mainLibrary: String
+    )
+
+    private external fun nativeClearMinecraftRuntime()
 
     companion object {
         private const val DEFAULT_INSTANCE_ID = "default"
