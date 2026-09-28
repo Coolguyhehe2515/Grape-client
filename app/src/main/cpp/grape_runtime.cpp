@@ -1,7 +1,6 @@
 #include "grape_runtime.h"
 
 #include <android/log.h>
-#include <android_native_app_glue.h>
 #include <dlfcn.h>
 
 #include <string>
@@ -37,10 +36,7 @@ bool load(const RuntimeConfig& config, std::string& error) {
     logInfo("Loading generic native runtime: " + config.main_library);
 
     dlerror();
-    g_main_handle = dlopen(
-        config.main_library.c_str(),
-        RTLD_NOW | RTLD_LOCAL
-    );
+    g_main_handle = dlopen(config.main_library.c_str(), RTLD_NOW | RTLD_LOCAL);
 
     if (g_main_handle == nullptr) {
         const char* message = dlerror();
@@ -54,9 +50,7 @@ bool load(const RuntimeConfig& config, std::string& error) {
     const char* symbol_error = dlerror();
 
     if (symbol == nullptr || symbol_error != nullptr) {
-        error = symbol_error != nullptr
-            ? symbol_error
-            : "grape_runtime_main was not found";
+        error = symbol_error != nullptr ? symbol_error : "grape_runtime_main was not found";
         logError(error);
         unload();
         return false;
@@ -82,8 +76,7 @@ bool runMinecraft(android_app* app, std::string& error) {
 
     const int result = g_runtime_main(app);
     if (result != 0) {
-        error = "Generic runtime returned error code " +
-                std::to_string(result);
+        error = "Generic runtime returned error code " + std::to_string(result);
         logError(error);
         return false;
     }
