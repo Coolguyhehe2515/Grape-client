@@ -3,7 +3,7 @@ package com.grape.client.minecraft
 import android.content.Context
 import com.grape.client.logging.GrapeLogger
 
-class MinecraftRuntimePreparer(context: Context) {
+class MinecraftRuntimePreparer(private val context: Context) {
 
     private val manager = GamePackageManager(context)
     private val installer = MinecraftRuntimeInstaller(context)
