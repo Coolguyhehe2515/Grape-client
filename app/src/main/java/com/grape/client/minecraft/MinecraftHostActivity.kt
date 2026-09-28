@@ -5,36 +5,55 @@ import com.google.androidgamesdk.GameActivity
 import com.grape.client.logging.GrapeLogger
 
 /**
- * In-process GameActivity host.
+ * In-process GameActivity host for the Grape native runtime.
  *
- * Native Minecraft code must only be entered after the runtime preparation
- * step succeeds. This activity does not launch Minecraft as a separate app.
+ * This does not launch Minecraft as a separate Android application.
  */
 class MinecraftHostActivity : GameActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         GrapeLogger.info("MinecraftHostActivity starting")
 
-        val preparer = MinecraftRuntimePreparer(this)
-        val instanceResult = preparer.prepare(DEFAULT_INSTANCE_ID)
+        val result = MinecraftRuntimePreparer(this)
+            .prepare(DEFAULT_INSTANCE_ID)
 
-        if (instanceResult.isFailure) {
+        if (result.isFailure) {
             GrapeLogger.error(
-                "Minecraft runtime preparation failed: " +
-                    instanceResult.exceptionOrNull()?.message
+                "Runtime preparation failed: " +
+                    result.exceptionOrNull()?.message
             )
             finish()
             return
         }
 
-        val instance = instanceResult.getOrThrow()
+        val instance = result.getOrThrow()
 
-        GrapeLogger.info("Entering GameActivity lifecycle")
-        GrapeLogger.info("Runtime root: ${instance.root.absolutePath}")
+        GrapeLogger.info(
+            "Runtime root: ${instance.root.absolutePath}"
+        )
+        GrapeLogger.info(
+            "Runtime native directory: ${instance.nativeDir.absolutePath}"
+        )
+        GrapeLogger.info("Starting GameActivity native lifecycle")
 
         super.onCreate(savedInstanceState)
 
-        GrapeLogger.info("GameActivity lifecycle entered")
+        GrapeLogger.info("GameActivity native lifecycle started")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        GrapeLogger.info("MinecraftHostActivity resumed")
+    }
+
+    override fun onPause() {
+        GrapeLogger.info("MinecraftHostActivity paused")
+        super.onPause()
+    }
+
+    override fun onDestroy() {
+        GrapeLogger.info("MinecraftHostActivity destroyed")
+        super.onDestroy()
     }
 
     companion object {
